@@ -40,13 +40,21 @@ scale-info = { workspace = true }
 scale-value = { workspace = true }
 syn = { workspace = true }
 quote = { workspace = true }
-jsonrpsee = { workspace = true, features = ["async-client", "client-ws-transport-native-tls", "http-client"] }
+jsonrpsee = { workspace = true, features = [
+    "async-client",
+    "client-ws-transport-native-tls",
+    "http-client",
+] }
 tokio = { workspace = true, features = ["rt-multi-thread"] }
 scale-typegen-description = { workspace = true }
 heck = { workspace = true }
 indoc = { workspace = true }
 thiserror = { workspace = true }
 smoldot = { workspace = true, optional = true }
+schnorrkel = { git = "https://github.com/Fiono11/schnorrkel", branch = "final_frost", features = [
+    "alloc",
+    "aead",
+] }
 
 [dev-dependencies]
 strip-ansi-escapes = { workspace = true }

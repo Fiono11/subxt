@@ -8,4 +8,5 @@ pub mod compatibility;
 pub mod diff;
 pub mod explore;
 pub mod metadata;
+pub mod olaf;
 pub mod version;
