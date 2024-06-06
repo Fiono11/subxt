@@ -55,6 +55,7 @@ schnorrkel = { git = "https://github.com/Fiono11/schnorrkel", branch = "final_fr
     "alloc",
     "aead",
 ] }
+subxt-signer = { workspace = true, features = ["sr25519"] }
 
 [dev-dependencies]
 strip-ansi-escapes = { workspace = true }

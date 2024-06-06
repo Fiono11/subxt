@@ -5,6 +5,7 @@ use codec::Decode;
 use color_eyre::eyre::eyre;
 use color_eyre::owo_colors::OwoColorize;
 use indoc::writedoc;
+use olaf::OlafSubcommand;
 use std::fmt::Write;
 use std::write;
 
@@ -12,6 +13,7 @@ use subxt::Metadata;
 
 use self::pallets::PalletSubcommand;
 
+mod olaf;
 mod pallets;
 mod runtime_apis;
 
@@ -117,6 +119,14 @@ pub struct Opts {
 pub enum PalletOrRuntimeApi {
     Pallet(PalletOpts),
     Api(RuntimeApiOpts),
+    Olaf(OlafOpts),
+}
+
+#[derive(Debug, Parser)]
+pub struct OlafOpts {
+    pub name: Option<String>,
+    #[command(subcommand)]
+    pub subcommand: Option<OlafSubcommand>,
 }
 
 #[derive(Debug, Parser)]
@@ -167,6 +177,31 @@ pub async fn run(opts: Opts, output: &mut impl std::io::Write) -> color_eyre::Re
     };
 
     match pallet_or_runtime_api {
+        PalletOrRuntimeApi::Olaf(opts) => {
+            let Some(name) = opts.name else {
+                let pallets = pallets_as_string(&metadata);
+                writedoc! {output, "
+                Usage:
+                    subxt explore pallet {pallet_placeholder}
+                        explore a specific pallet
+
+                {pallets}
+                "}?;
+                return Ok(());
+            };
+
+            if let Some(pallet) = metadata
+                .pallets()
+                .find(|e| e.name().eq_ignore_ascii_case(&name))
+            {
+                olaf::run(opts.subcommand, pallet, &metadata, file_or_url, output).await
+            } else {
+                Err(eyre!(
+                    "pallet \"{name}\" not found in metadata!\n{}",
+                    pallets_as_string(&metadata),
+                ))
+            }
+        }
         PalletOrRuntimeApi::Pallet(opts) => {
             let Some(name) = opts.name else {
                 let pallets = pallets_as_string(&metadata);

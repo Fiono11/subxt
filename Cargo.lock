@@ -801,6 +801,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "chacha20poly1305"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "10cd79432192d1c0f4e1a0fef9527696cc039165d729fb41b3f4f4f354c2dc35"
+dependencies = [
+ "aead",
+ "chacha20",
+ "cipher",
+ "poly1305",
+ "zeroize",
+]
+
+[[package]]
 name = "chrono"
 version = "0.4.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -847,6 +860,7 @@ checksum = "773f3b9af64447d2ce9850330c473515014aa235e6a783b02db81ff39e4a3dad"
 dependencies = [
  "crypto-common",
  "inout",
+ "zeroize",
 ]
 
 [[package]]
@@ -1183,6 +1197,7 @@ dependencies = [
  "digest 0.10.7",
  "fiat-crypto",
  "platforms",
+ "rand_core 0.6.4",
  "rustc_version",
  "subtle",
  "zeroize",
@@ -3910,6 +3925,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "schnorrkel"
+version = "0.11.4"
+source = "git+https://github.com/Fiono11/schnorrkel?branch=final_frost#fddd00285f331d57e52161e9fc13d766eb68e0f2"
+dependencies = [
+ "aead",
+ "arrayref",
+ "arrayvec 0.7.4",
+ "chacha20poly1305",
+ "curve25519-dalek 4.1.2",
+ "getrandom_or_panic",
+ "merlin",
+ "rand_core 0.6.4",
+ "serde_bytes",
+ "sha2 0.10.8",
+ "subtle",
+ "zeroize",
+]
+
+[[package]]
 name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4226,7 +4260,7 @@ dependencies = [
  "rand",
  "rand_chacha",
  "ruzstd",
- "schnorrkel",
+ "schnorrkel 0.11.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde",
  "serde_json",
  "sha2 0.10.8",
@@ -4360,7 +4394,7 @@ dependencies = [
  "primitive-types",
  "rand",
  "scale-info",
- "schnorrkel",
+ "schnorrkel 0.11.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "secp256k1",
  "secrecy",
  "serde",
@@ -4739,7 +4773,7 @@ checksum = "a2b564c293e6194e8b222e52436bcb99f60de72043c7f845cf6c4406db4df121"
 dependencies = [
  "hmac 0.12.1",
  "pbkdf2",
- "schnorrkel",
+ "schnorrkel 0.11.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "sha2 0.10.8",
  "zeroize",
 ]
@@ -4814,6 +4848,7 @@ dependencies = [
  "scale-info",
  "scale-typegen-description",
  "scale-value",
+ "schnorrkel 0.11.4 (git+https://github.com/Fiono11/schnorrkel?branch=final_frost)",
  "serde",
  "serde_json",
  "smoldot",
@@ -4949,7 +4984,7 @@ dependencies = [
  "pbkdf2",
  "proptest",
  "regex",
- "schnorrkel",
+ "schnorrkel 0.11.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "secp256k1",
  "secrecy",
  "sha2 0.10.8",
