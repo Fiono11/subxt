@@ -124,7 +124,7 @@ pub enum PalletOrRuntimeApi {
 
 #[derive(Debug, Parser)]
 pub struct OlafOpts {
-    pub name: Option<String>,
+    //pub name: Option<String>,
     #[command(subcommand)]
     pub subcommand: Option<OlafSubcommand>,
 }
@@ -155,19 +155,25 @@ pub async fn run(opts: Opts, output: &mut impl std::io::Write) -> color_eyre::Re
     let bytes = file_or_url.fetch().await?;
     let metadata = Metadata::decode(&mut &bytes[..])?;
 
+    let olaf_placeholder = "<OLAF>".blue();
     let pallet_placeholder = "<PALLET>".blue();
     let runtime_api_placeholder = "<RUNTIME_API>".blue();
 
     // if no pallet/runtime_api specified, show user the pallets/runtime_apis to choose from:
     let Some(pallet_or_runtime_api) = opts.subcommand else {
+        let olaf = olaf_as_string(&metadata);
         let pallets = pallets_as_string(&metadata);
         let runtime_apis = runtime_apis_as_string(&metadata);
         writedoc! {output, "
         Usage:
+            subxt explore olaf {olaf_placeholder}
+                explore the olaf protocol
             subxt explore pallet {pallet_placeholder}
                 explore a specific pallet
             subxt explore api {runtime_api_placeholder}
                 explore a specific runtime api
+
+        {olaf}
 
         {pallets}
 
@@ -178,29 +184,31 @@ pub async fn run(opts: Opts, output: &mut impl std::io::Write) -> color_eyre::Re
 
     match pallet_or_runtime_api {
         PalletOrRuntimeApi::Olaf(opts) => {
-            let Some(name) = opts.name else {
-                let pallets = pallets_as_string(&metadata);
-                writedoc! {output, "
-                Usage:
-                    subxt explore pallet {pallet_placeholder}
-                        explore a specific pallet
+            /*let Some(name) = opts.name else {
+            let pallets = pallets_as_string(&metadata);
+            writedoc! {output, "
+            Usage:
+                subxt explore olaf {olaf_placeholder}
+                    explore the olaf protocol
 
-                {pallets}
-                "}?;
-                return Ok(());
-            };
+            {pallets}
+            "}?;
+            return Ok(());
+            };*/
 
-            if let Some(pallet) = metadata
-                .pallets()
-                .find(|e| e.name().eq_ignore_ascii_case(&name))
-            {
-                olaf::run(opts.subcommand, pallet, &metadata, file_or_url, output).await
-            } else {
-                Err(eyre!(
-                    "pallet \"{name}\" not found in metadata!\n{}",
-                    pallets_as_string(&metadata),
-                ))
-            }
+            println!("subcommand: {:?}", opts.subcommand);
+
+            //if let Some(pallet) = metadata
+            //.pallets()
+            //.find(|e| e.name().eq_ignore_ascii_case(&name))
+            //{
+            olaf::run(opts.subcommand, &metadata, file_or_url, output).await
+            //} else {
+            //Err(eyre!(
+            //"olaf \"{name}\" not found in metadata!\n{}",
+            //olaf_as_string(&metadata),
+            //))
+            //})
         }
         PalletOrRuntimeApi::Pallet(opts) => {
             let Some(name) = opts.name else {
@@ -261,6 +269,22 @@ pub async fn run(opts: Opts, output: &mut impl std::io::Write) -> color_eyre::Re
                 ))
             }
         }
+    }
+}
+
+fn olaf_as_string(metadata: &Metadata) -> String {
+    let olaf_placeholder = "<OLAF>".blue();
+    if metadata.pallets().len() == 0 {
+        format!("There are no {olaf_placeholder}'s available.")
+    } else {
+        let mut output = format!("Available {olaf_placeholder}'s are:");
+        let mut strings: Vec<_> = metadata.pallets().map(|p| p.name()).collect();
+        strings.sort();
+        //for olaf in strings {
+        write!(output, "\n    {}", "SimplpedpopRound1").unwrap();
+        write!(output, "\n    {}", "SimplpedpopRound2").unwrap();
+        //}
+        output
     }
 }
 

@@ -4856,6 +4856,7 @@ dependencies = [
  "subxt",
  "subxt-codegen",
  "subxt-metadata",
+ "subxt-signer",
  "syn 2.0.60",
  "thiserror",
  "tokio",

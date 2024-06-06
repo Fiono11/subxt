@@ -58,16 +58,16 @@ pub struct FrostAggregateSubcommand {
 
 pub async fn run<'a>(
     subcommand: Option<OlafSubcommand>,
-    pallet_metadata: PalletMetadata<'a>,
+    //pallet_metadata: PalletMetadata<'a>,
     metadata: &'a Metadata,
     file_or_url: FileOrUrl,
     output: &mut impl std::io::Write,
 ) -> color_eyre::Result<()> {
-    let Some(subcommand) = subcommand else {
-        return Ok(());
-    };
+    //let Some(subcommand) = subcommand else {
+    //return Ok(());
+    //};
 
-    match subcommand {
+    match subcommand.unwrap() {
         OlafSubcommand::SimplpedpopRound1(command) => {
             let secret_key_string =
                 fs::read_to_string(Path::new(&command.files).join("contributor_secret_key.json"))
