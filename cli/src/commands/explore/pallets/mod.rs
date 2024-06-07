@@ -14,6 +14,7 @@ use self::{
 };
 
 use calls::explore_calls;
+pub(crate) use calls::{calls_to_string, get_calls_enum_type, value_into_composite};
 use constants::explore_constants;
 use storage::explore_storage;
 

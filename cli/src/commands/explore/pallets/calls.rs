@@ -115,7 +115,10 @@ pub fn explore_calls(
     Ok(())
 }
 
-fn calls_to_string(pallet_calls: &TypeDefVariant<PortableForm>, pallet_name: &str) -> String {
+pub(crate) fn calls_to_string(
+    pallet_calls: &TypeDefVariant<PortableForm>,
+    pallet_name: &str,
+) -> String {
     if pallet_calls.variants.is_empty() {
         return format!("No <CALL>'s available in the \"{pallet_name}\" pallet.");
     }
@@ -130,7 +133,7 @@ fn calls_to_string(pallet_calls: &TypeDefVariant<PortableForm>, pallet_name: &st
     output
 }
 
-fn get_calls_enum_type<'a>(
+pub(crate) fn get_calls_enum_type<'a>(
     pallet: PalletMetadata,
     registry: &'a PortableRegistry,
 ) -> color_eyre::Result<(&'a TypeDefVariant<PortableForm>, &'a Type<PortableForm>)> {
@@ -163,7 +166,7 @@ fn mocked_offline_client(metadata: Metadata) -> OfflineClient<SubstrateConfig> {
 }
 
 /// composites stay composites, all other types are converted into a 1-fielded unnamed composite
-fn value_into_composite(value: scale_value::Value) -> scale_value::Composite<()> {
+pub(crate) fn value_into_composite(value: scale_value::Value) -> scale_value::Composite<()> {
     match value.value {
         ValueDef::Composite(composite) => composite,
         _ => Composite::Unnamed(vec![value]),

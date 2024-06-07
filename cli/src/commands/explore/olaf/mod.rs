@@ -1,5 +1,9 @@
-use crate::utils::FileOrUrl;
+use crate::commands::explore::pallets::{
+    calls_to_string, get_calls_enum_type, value_into_composite,
+};
+use crate::utils::{parse_string_into_scale_value, FileOrUrl};
 use clap::{Args, Subcommand};
+use indoc::formatdoc;
 use scale_value::Value;
 use schnorrkel::olaf::frost::{aggregate, SigningCommitments, SigningNonces, SigningPackage};
 use schnorrkel::olaf::simplpedpop::{AllMessage, SPPOutputMessage};
@@ -10,9 +14,10 @@ use std::io::Write;
 use std::{fs, path::Path};
 use subxt::backend::legacy::LegacyRpcMethods;
 use subxt::backend::rpc::RpcClient;
+use subxt::book::usage;
 use subxt::config::polkadot::PolkadotExtrinsicParamsBuilder;
 use subxt::utils::{AccountId32, MultiAddress, MultiSignature};
-use subxt::{Metadata, OnlineClient, PolkadotConfig};
+use subxt::{tx, Metadata, OnlineClient, PolkadotConfig};
 use subxt_metadata::PalletMetadata;
 use subxt_signer::sr25519;
 
@@ -40,20 +45,26 @@ pub struct SimplpedpopRound2Subcommand {
 
 #[derive(Debug, Clone, Args)]
 pub struct FrostRound1Subcommand {
-    call: String,
+    //call: String,
     files: String,
 }
 
 #[derive(Debug, Clone, Args)]
 pub struct FrostRound2Subcommand {
-    call: String,
     files: String,
+    pallet: String,
+    call: String,
+    #[clap(required = false)]
+    trailing_args: Vec<String>,
 }
 
 #[derive(Debug, Clone, Args)]
 pub struct FrostAggregateSubcommand {
-    call: String,
     files: String,
+    pallet: String,
+    call: String,
+    #[clap(required = false)]
+    trailing_args: Vec<String>,
 }
 
 pub async fn run<'a>(
@@ -247,14 +258,54 @@ pub async fn run<'a>(
 
             let legacy_rpc = LegacyRpcMethods::<PolkadotConfig>::new(rpc_client);
 
-            let call =
-                subxt::dynamic::tx("System", "remark", vec![Value::from_bytes("Hello there")]);
+            //let call =
+            //subxt::dynamic::tx("System", "remark", vec![Value::from_bytes("Hello there")]);
 
             let account_id = AccountId32(threshold_public_key.to_bytes());
 
             let nonce = legacy_rpc.system_account_next_index(&account_id).await?;
 
             let params = PolkadotExtrinsicParamsBuilder::new().nonce(nonce).build();
+
+            // collect all the trailing arguments into a single string that is later into a scale_value::Value
+            let trailing_args = command.trailing_args.join(" ");
+
+            let pallet_name = command.pallet;
+
+            // parse scale_value from trailing arguments and try to create an unsigned extrinsic with it:
+            let value = parse_string_into_scale_value(&trailing_args)?;
+            let value_as_composite = value_into_composite(value);
+            //let offline_client = mocked_offline_client(metadata.clone());
+
+            let pallet_metadata = metadata
+                .pallets()
+                .find(|e| e.name().eq_ignore_ascii_case(&pallet_name))
+                .unwrap();
+
+            // get the enum that stores the possible calls:
+            let (calls_enum_type_def, _calls_enum_type) =
+                get_calls_enum_type(pallet_metadata, metadata.types())?;
+
+            let usage = || {
+                let calls = calls_to_string(calls_enum_type_def, &pallet_name);
+                formatdoc! {"
+                Usage:
+                    subxt explore pallet {pallet_name} calls <CALL>
+                        explore a specific call of this pallet
+
+                {calls}
+                "}
+            };
+
+            // if no call specified, show user the calls to choose from:
+            //let Some(call_name) = command.call else {
+            //writeln!(output, "{}", usage())?;
+            //return Ok(());
+            //};
+
+            let call_name = command.call;
+
+            let call = tx::dynamic(pallet_name, call_name, value_as_composite);
 
             let partial_tx = client.tx().create_partial_signed_offline(&call, params)?;
 
@@ -322,6 +373,7 @@ pub async fn run<'a>(
 
             let client = OnlineClient::<PolkadotConfig>::new().await?;
 
+            // TODO: user input
             let rpc_client = RpcClient::from_url("ws://127.0.0.1:9944").await?;
 
             let legacy_rpc = LegacyRpcMethods::<PolkadotConfig>::new(rpc_client);
@@ -330,8 +382,48 @@ pub async fn run<'a>(
 
             let params = PolkadotExtrinsicParamsBuilder::new().nonce(nonce).build();
 
-            let call =
-                subxt::dynamic::tx("System", "remark", vec![Value::from_bytes("Hello there")]);
+            //let call =
+            //subxt::dynamic::tx("System", "remark", vec![Value::from_bytes("Hello there")]);
+
+            // collect all the trailing arguments into a single string that is later into a scale_value::Value
+            let trailing_args = command.trailing_args.join(" ");
+
+            let pallet_name = command.pallet;
+
+            // parse scale_value from trailing arguments and try to create an unsigned extrinsic with it:
+            let value = parse_string_into_scale_value(&trailing_args)?;
+            let value_as_composite = value_into_composite(value);
+            //let offline_client = mocked_offline_client(metadata.clone());
+
+            let pallet_metadata = metadata
+                .pallets()
+                .find(|e| e.name().eq_ignore_ascii_case(&pallet_name))
+                .unwrap();
+
+            // get the enum that stores the possible calls:
+            let (calls_enum_type_def, _calls_enum_type) =
+                get_calls_enum_type(pallet_metadata, metadata.types())?;
+
+            let usage = || {
+                let calls = calls_to_string(calls_enum_type_def, &pallet_name);
+                formatdoc! {"
+                Usage:
+                    subxt explore pallet {pallet_name} calls <CALL>
+                        explore a specific call of this pallet
+
+                {calls}
+                "}
+            };
+
+            // if no call specified, show user the calls to choose from:
+            //let Some(call_name) = command.call else {
+            //writeln!(output, "{}", usage())?;
+            //return Ok(());
+            //};
+
+            let call_name = command.call;
+
+            let call = tx::dynamic(pallet_name, call_name, value_as_composite);
 
             let partial_tx = client.tx().create_partial_signed_offline(&call, params)?;
 
